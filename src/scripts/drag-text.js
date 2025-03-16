@@ -590,9 +590,15 @@ H5P.DragText = (function ($, Question, ConfirmationDialog) {
     else if(droppable && droppable.hasDraggable() && !isShowingFeedback && !isCorrectInstantFeedback) {
       var containsDropped = droppableElement.querySelector('[aria-grabbed]');
 
-      this.createConfirmResetDialog(function () {
+      // Disable Confirm Rest Dialog
+      const showConfirmResetDialog = false; // @enhancement - make configurable
+      if (showConfirmResetDialog) {
+        this.createConfirmResetDialog(function () {
+          self.revert(self.getDraggableByElement(containsDropped));
+        }).show();
+      } else {
         self.revert(self.getDraggableByElement(containsDropped));
-      }).show();
+      }
     }
   };
 
@@ -780,8 +786,14 @@ H5P.DragText = (function ($, Question, ConfirmationDialog) {
         if(self.isAnswerPart(part)) {
           // is draggable/droppable
           const solution = lex(part);
-          self.createDraggable(solution.text);
-          self.createDroppable(solution.text, solution.tip, solution.correctFeedback, solution.incorrectFeedback);
+
+          // Accept multiple correct answers inside pairs of asterisks.
+          // Split by slash _not preceded by the < character_ in case some solution.text is formatted with html tags.
+          const solutions = solution.text.split(/(?<!<)\//);
+          solutions.forEach ((solution) => {
+            self.createDraggable(solution);
+          });
+          self.createDroppable(solutions, solution.tip, solution.correctFeedback, solution.incorrectFeedback, solution.removableBlock);
         }
         else {
           // is normal text
@@ -801,7 +813,12 @@ H5P.DragText = (function ($, Question, ConfirmationDialog) {
       }
 
       distractor = lex(distractor);
-      self.createDraggable(distractor.text);
+      
+      // Accept multiple distractors inside a pair of asterisks.
+      const distractors = distractor.text.split(/(?<!<)\//);
+      distractors.forEach ((distractor) => {
+        self.createDraggable(distractor);
+      });
     });
 
     self.shuffleAndAddDraggables(self.$draggables);

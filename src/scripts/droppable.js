@@ -79,9 +79,10 @@ H5P.TextDroppable = (function ($) {
    * Displays the solution next to the drop box if it is not correct.
    */
   Droppable.prototype.showSolution = function () {
-    const correct = (this.containedDraggable !== null) && (this.containedDraggable.getAnswerText() === this.text);
+    const correct = (this.containedDraggable !== null) && this.text.includes(this.containedDraggable.getAnswerText());
     if (!correct) {
-      this.$showSolution.html(this.text);
+      const solutiontxt = this.text.join(' / ');
+      this.$showSolution.html(solutiontxt);
     }
 
     this.$showSolution.prepend(correct ? this.$correctText : this.$incorrectText);
@@ -173,7 +174,7 @@ H5P.TextDroppable = (function ($) {
     if (this.containedDraggable === null) {
       return false;
     }
-    return this.containedDraggable.getAnswerText() === this.text;
+    return this.text.includes(this.containedDraggable.getAnswerText());
   };
 
   /**
